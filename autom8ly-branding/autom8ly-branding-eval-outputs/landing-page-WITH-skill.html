@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Triggers - Autom8ly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Autom8ly Brand CSS Custom Properties */
+        :root {
+            --autom8ly-navy: #0F3765;
+            --autom8ly-orange: #F9824F;
+            --autom8ly-white: #FFFFFF;
+            --autom8ly-off-white: #F5F7FA;
+            --autom8ly-light-navy: #1B4F8C;
+            --autom8ly-light-orange: #FBAA80;
+            --autom8ly-dark-text: #1A1A2E;
+            --autom8ly-mid-gray: #6B7280;
+            --autom8ly-light-gray: #E5E7EB;
+
+            --font-primary: 'Jost', 'Calibri', 'Arial', sans-serif;
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: var(--font-primary);
+            color: var(--autom8ly-dark-text);
+            line-height: 1.6;
+            background-color: var(--autom8ly-off-white);
+        }
+
+        /* Navigation Bar */
+        nav {
+            background-color: var(--autom8ly-navy);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--autom8ly-white);
+            letter-spacing: -0.5px;
+        }
+
+        .logo .orange-eight {
+            color: var(--autom8ly-orange);
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--autom8ly-white);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--autom8ly-light-orange);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--autom8ly-navy) 0%, var(--autom8ly-light-navy) 100%);
+            color: var(--autom8ly-white);
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero h1 .highlight {
+            color: var(--autom8ly-orange);
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            font-weight: 400;
+            opacity: 0.95;
+        }
+
+        .cta-primary {
+            background-color: var(--autom8ly-orange);
+            color: var(--autom8ly-white);
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-family: var(--font-primary);
+        }
+
+        .cta-primary:hover {
+            background-color: #F86A2F;
+            transform: translateY(-2px);
+        }
+
+        .cta-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 2rem;
+            background-color: var(--autom8ly-white);
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 600;
+            color: var(--autom8ly-navy);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--autom8ly-mid-gray);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background-color: var(--autom8ly-white);
+            border: 2px solid var(--autom8ly-light-gray);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-card:hover {
+            border-color: var(--autom8ly-orange);
+            box-shadow: 0 4px 12px rgba(249, 130, 79, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--autom8ly-light-orange);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--autom8ly-navy);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            font-size: 0.95rem;
+            color: var(--autom8ly-mid-gray);
+            line-height: 1.7;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, var(--autom8ly-navy) 0%, var(--autom8ly-light-navy) 100%);
+            color: var(--autom8ly-white);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .cta-section-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cta-section h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            font-size: 1.05rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .cta-secondary {
+            background-color: var(--autom8ly-orange);
+            color: var(--autom8ly-white);
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-family: var(--font-primary);
+        }
+
+        .cta-secondary:hover {
+            background-color: #F86A2F;
+            transform: translateY(-2px);
+        }
+
+        .cta-secondary:active {
+            transform: translateY(0);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--autom8ly-navy);
+            color: var(--autom8ly-white);
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        footer p {
+            opacity: 0.8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav .nav-links {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Accessibility: Focus States */
+        button:focus,
+        a:focus {
+            outline: 2px solid var(--autom8ly-orange);
+            outline-offset: 2px;
+        }
+
+        /* Skip to main content link (accessibility) */
+        .skip-to-main {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--autom8ly-navy);
+            color: var(--autom8ly-white);
+            padding: 8px;
+            text-decoration: none;
+            z-index: 100;
+        }
+
+        .skip-to-main:focus {
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-to-main">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav role="navigation" aria-label="Main navigation">
+        <div class="logo">Autom<span class="orange-eight">8</span>ly</div>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#signup">Get Started</a></li>
+            <li><a href="#footer">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero" role="banner">
+        <div class="hero-content">
+            <h1>Unlock Automation with <span class="highlight">Smart Triggers</span></h1>
+            <p>Build intelligent workflows that respond instantly to any event. No coding required.</p>
+            <button class="cta-primary" onclick="document.getElementById('signup').scrollIntoView({behavior: 'smooth'})">
+                Start Free Trial
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main">
+        <!-- Features Section -->
+        <section class="features" id="features">
+            <div class="features-container">
+                <h2 class="section-title">Why Smart Triggers?</h2>
+                <p class="section-subtitle">Autom8ly's Smart Triggers deliver instant response, deeper insights, and seamless integration.</p>
+
+                <div class="features-grid">
+                    <!-- Feature 1 -->
+                    <article class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Lightning-Fast Response</h3>
+                        <p>React to events in milliseconds. Smart Triggers monitor your systems 24/7 and execute actions instantly when conditions are met.</p>
+                    </article>
+
+                    <!-- Feature 2 -->
+                    <article class="feature-card">
+                        <div class="feature-icon">🔗</div>
+                        <h3>Seamless Integration</h3>
+                        <p>Connect to 500+ apps and services. Smart Triggers work across your entire tech stack without custom code or complex setup.</p>
+                    </article>
+
+                    <!-- Feature 3 -->
+                    <article class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Intelligent Insights</h3>
+                        <p>Track every automation with real-time dashboards. Understand what's working and optimize your workflows with actionable data.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section" id="signup">
+            <div class="cta-section-content">
+                <h2>Ready to Automate?</h2>
+                <p>Join thousands of teams using Autom8ly to streamline operations and save countless hours every week.</p>
+                <button class="cta-secondary">Sign Up for Free</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer" role="contentinfo">
+        <p>&copy; 2026 Autom8ly. All rights reserved. | <a href="#" style="color: var(--autom8ly-light-orange); text-decoration: none;">Privacy Policy</a> | <a href="#" style="color: var(--autom8ly-light-orange); text-decoration: none;">Terms of Service</a></p>
+    </footer>
+</body>
+</html>

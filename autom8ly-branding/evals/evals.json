@@ -1,0 +1,23 @@
+{
+  "skill_name": "autom8ly-branding",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a 5-slide pitch deck for Autom8ly introducing our workflow automation platform to potential enterprise clients. Include a title slide, problem statement, solution overview, key features, and a closing CTA slide. Make it look like it came from our brand team.",
+      "expected_output": "A .pptx file with navy title slide, white content slides, orange section accents, Jost font throughout, and proper color usage per the brand guidelines.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I need an HTML landing page mockup for Autom8ly's new 'Smart Triggers' feature launch. It should have a hero section, three feature cards, and a signup CTA. Use our company branding.",
+      "expected_output": "An HTML file using Autom8ly navy/orange palette, Jost from Google Fonts, CSS custom properties matching the brand, and accessible contrast.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Put together a professional one-pager Word doc summarizing Autom8ly's Q1 results for our board. Revenue was $2.4M (up 18%), we added 340 new customers, and NPS hit 72. Use Autom8ly branding throughout.",
+      "expected_output": "A .docx with navy headings in Jost SemiBold, orange accent lines, properly styled tables with navy headers and alternating off-white rows, and body text in Jost Regular.",
+      "files": []
+    }
+  ]
+}
