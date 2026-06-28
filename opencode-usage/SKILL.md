@@ -6,10 +6,54 @@ description: >
   / junior model. Trigger keywords: OpenCode, opencode serve, OpenCode HTTP
   server API, opencode-runner, OpenCode sessions, session orchestration,
   directory scoping, watch URL, context isolation between repos, checkpoint
-  and recovery, junior developer delegation, local/open-model inference.
+  and recovery, junior developer delegation, local/open-model inference,
+  data-handling boundary, never send PII/PCI/secrets/credentials/production
+  policies to OpenCode.
 ---
 
 # OpenCode Usage — Canonical Skill
+
+## CRITICAL — data boundary (what you may NEVER send to OpenCode)
+
+OpenCode is a JUNIOR running on models that may be local OR routed to
+third-party/remote providers. **Treat every prompt, file, snippet, path, and
+error you send it as potentially leaving our trust boundary and being logged by
+a model provider.** The senior is the DATA GATEKEEPER, not just the context
+gatekeeper.
+
+**OK to send:** our own source code, tests, docs, the structure/architecture of
+our codebases, non-sensitive task instructions, and synthetic / anonymized
+fixture data.
+
+**NEVER send to OpenCode — no exceptions, regardless of which model is selected
+(local included):**
+- Customer or end-user data of any kind; **PII**; **PHI**; **PCI** / cardholder data.
+- Secrets: **keys, API tokens, credentials, passwords, private keys, certs,
+  `.env` contents, connection strings, session/grant tokens**.
+- Production policies, security configurations, access-control rules, WAF/
+  firewall configs.
+- **Network topology/topography**, internal hostnames/IPs, infrastructure or
+  deployment secrets.
+- Controlled / classified material (e.g. CUI, ITAR/EAR, regulated datasets).
+- Real production data or logs that may contain any of the above.
+
+**If a task appears to REQUIRE any of the above, STOP.** Do not proceed.
+Escalate to the senior/architect and redo it with redacted/synthetic data, or
+do that part yourself outside OpenCode.
+
+Practical controls (the senior owns these):
+- Scrub context before delegating — never paste `.env`, secrets files, prod
+  configs, real customer datasets, real credentials, or production policy docs
+  into a prompt.
+- Use synthetic fixtures / anonymized samples for tests and examples.
+- Pin and verify the session's model + provider; a remote provider means data
+  egress — assume it.
+- Keep the junior's workspace free of real secrets (secrets must not live in a
+  repo it can read, and must not be handed in via the prompt either).
+- When in doubt, treat it as sensitive and do not send it.
+
+This complements **Context discipline** below: the senior controls not just
+WHICH repo the junior touches, but WHAT data crosses to it.
 
 ## Three roles
 
