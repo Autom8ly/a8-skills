@@ -89,6 +89,27 @@ WHICH repo the junior touches, but WHAT data crosses to it.
   (Confirmed: `GET /session?directory=/path` returns only that directory's
   sessions.)
 
+### ⚠️ Two DIFFERENT path encodings — do not mix them up
+
+The workspace path is encoded **differently** depending on where it goes. Using
+the raw path, or the wrong encoding, is the most common mistake:
+
+1. **HTTP API query param** `?directory=<abs_path>` → **URL-encode** the value
+   (percent-encoding). Use `curl -G --data-urlencode` so spaces/special chars in
+   the path are handled. The raw path "usually works" but is not safe:
+   ```bash
+   curl -sG http://127.0.0.1:<port>/session \
+     --data-urlencode directory=/Users/markv/Code/ciphergenii
+   ```
+2. **Browser / watch URL path segment** → **base64url** of the absolute path,
+   **no `=` padding**. This is NOT URL-encoding and the raw path does NOT work
+   here:
+   ```
+   http://127.0.0.1:<port>/<base64url(/Users/markv/Code/ciphergenii)>/session/<session_id>
+   ```
+
+Rule of thumb: query string ⇒ URL-encode; URL path segment ⇒ base64url.
+
 ### API endpoints
 
 All session-scoped calls take `?directory=<absolute_path>`.
@@ -161,7 +182,8 @@ deep-link URL so they can watch and approve in the browser. A freshly
 API-created or ephemeral directory may NOT appear in the UI sidebar, so
 the direct URL is required.
 
-Formula:
+Formula (the path segment is **base64url** of the absolute path — NOT the raw
+path, NOT URL-encoding; strip `=` padding):
 
 ```
 url = "http://<host>:<port>/" + base64url(absolute_workspace_path, no `=` padding) + "/session/" + session_id
