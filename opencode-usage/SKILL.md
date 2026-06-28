@@ -256,6 +256,31 @@ Report: files changed, behavior changed, verification output, blockers.
 - Verification rerun by the senior
 - A commit captures the accepted state
 
+## Mentorship & continuous improvement
+
+The senior is a **MENTOR**, not only a reviewer — coach the junior so it gets
+better over time, and capture what is learned so future sessions start smarter.
+
+- **Have the junior record learnings.** Remind it to write reusable notes into
+  its own markdown / skill / `AGENTS.md` files in the workspace: project
+  conventions, commands that worked, gotchas, and patterns. A junior that
+  maintains good notes compounds its performance across sessions.
+- **Turn repeated tasks into local skills.** Encourage the junior to create a
+  local skill for any recurring multi-step workflow — **regression suites**,
+  build/verify, release checklists, common refactors — so the task runs
+  consistently instead of being re-derived each time.
+- **LLM-flow regression: the SR is the DECIDER.** When the task is testing an
+  LLM / agent flow, a green unit assertion is NOT sufficient — outputs are
+  non-deterministic and judgment-laden. The junior runs the flow and reports the
+  evidence (inputs, outputs, traces); **the senior decides whether it worked "as
+  expected" in the context of the problem being solved.** Never let the junior
+  self-certify subjective LLM-flow correctness. Write down the acceptance
+  criteria ("what 'as expected' means for this problem") so the judgment is
+  reusable and the junior can pre-screen against it next time.
+- **Notes obey the data boundary.** Anything written into notes/skill files
+  lives in the workspace the junior reads — keep it free of secrets / PII /
+  customer data (see **CRITICAL — data boundary** above).
+
 ## Coordination files (if used)
 
 Read the whole file before appending. Use the file's turn-marker protocol.
