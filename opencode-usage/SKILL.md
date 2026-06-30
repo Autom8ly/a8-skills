@@ -274,6 +274,10 @@ Report: files changed, behavior changed, verification output, blockers.
 - No sibling-repo paths touched
 - No secrets / caches / data stores staged
 - Tests cover requested behavior including negative and security cases
+- **No silent fallback to a mock or a default** — a missing real dependency,
+  secret, config, or model must FAIL LOUD, never pass green on a mock. Mocks may
+  unit-test adapter shaping only; they may never back integration/RAG validation,
+  and integration paths must fail (not skip) when the real dependency is absent.
 - Docs match code
 - Verification rerun by the senior
 - A commit captures the accepted state
