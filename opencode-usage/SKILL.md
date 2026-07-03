@@ -241,9 +241,52 @@ silently change the contract."
 
 ## Isolation & recovery
 
-- One active session per physical workspace at a time (a busy session
-  rejects concurrent prompts).
-- For concurrent work on one repo, use separate git worktrees.
+- One active PROMPT per session at a time (a busy session rejects
+  concurrent prompts).
+- **Parallel sessions in ONE workspace are allowed** under the rules below;
+  for work with OVERLAPPING file surfaces, use separate git worktrees.
+
+### Parallel sessions in one workspace (validated 2026-07-01, opencode 1.17.9)
+
+Multiple sessions can safely work the SAME repo concurrently when — and only
+when — their file surfaces are disjoint. The senior owns proving that.
+
+1. **Verify disjointness BEFORE dispatch.** List every file each task will
+   touch (including its test files). Any overlap → serialize or use worktrees.
+   "Probably won't collide" is not verification.
+2. **Every prompt carries an explicit file ALLOWLIST** ("Work ONLY in these
+   three files: …") **and names the other session's turf as forbidden with a
+   reason** ("Do NOT touch src/controllers/ — another engineer is working on
+   those right now"). Juniors respect scope better when the reason is stated.
+3. **One shared checkpoint commit** covers all parallel sessions — commit
+   before dispatching the first one, reference the same hash in every prompt.
+4. **Dispatch order:** send the large multi-file task first, then carve small
+   independent tasks (new modules, isolated utils) into additional sessions.
+5. **Create + prompt each session via the API:**
+   ```bash
+   # create
+   curl -s -X POST "http://127.0.0.1:<port>/session?directory=<urlencoded_abs_path>" \
+     -H "Content-Type: application/json" -d '{"title": "<task title>"}'
+   # send work (async; returns 204 immediately)
+   curl -s -X POST "http://127.0.0.1:<port>/session/<id>/prompt_async?directory=<urlencoded_abs_path>" \
+     -H "Content-Type: application/json" -d @prompt.json
+   ```
+   Hand the user a watch URL per session (same base64url path segment, new
+   session id).
+6. **Poll completion per session** — done when the LAST message has
+   `info.role == "assistant"` AND `info.time.completed` set:
+   ```bash
+   curl -sG http://127.0.0.1:<port>/session/<id>/message \
+     --data-urlencode directory=<abs_path>
+   ```
+7. **Review sessions ONE AT A TIME against the shared checkpoint**
+   (`git diff <checkpoint> -- <that session's allowlisted files>`), so a
+   problem in one session's diff doesn't get mixed into the other's review.
+   Confirm each session stayed inside its allowlist before looking at content.
+8. **No parallel `bash`.** Parallel juniors must be restricted to edits and
+   read-only checks (e.g. `python3 -c "import ast; ast.parse(...)"`); never
+   let two sessions run builds/tests/git in the same working tree
+   concurrently — the senior runs the real suite once, after review.
 - Abort a runaway: `POST /session/:id/abort?directory=<...>`
 - If the junior wrote outside scope: stop, inspect `git status` in the
   affected repo, restore only the wrong-scope edits
