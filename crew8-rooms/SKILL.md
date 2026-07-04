@@ -53,6 +53,11 @@ node /Users/markv/Code/crew8/bin/crew8.js dashboard
 node /Users/markv/Code/crew8/bin/crew8.js inbox-wait --agent senior-myrepo --timeout 240
 ```
 
+**This guide is self-served by crew8**: `crew8 guide` (or
+`npx github:autom8ly/crew8 guide`) prints it in any terminal, and agents
+connected over MCP can call the `get_usage_guide` tool — point new
+participants at those instead of copying this file around.
+
 **Database sharing (critical):** every crew8 process on a machine defaults to
 `~/.crew8/crew8.db`, so seniors in different repos AND the dashboard share
 rooms automatically with zero config. If you override with `CREW8_DATABASE`
