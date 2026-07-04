@@ -81,7 +81,10 @@ Never impersonate another participant.
 ## Core workflow (MCP tools)
 
 ```
-# 1. See which rooms exist (shows owner + participants per room)
+# 1. Find rooms. By name (any project) — returns sessionIds ready to use:
+find_room(query="deploy coordination")
+# ...or browse: omit projectId to list across ALL projects
+list_sessions(status="active")
 list_sessions(projectId="agentgenii", status="active")
 
 # 2. Join — or create; the creator becomes room OWNER. Joining an
