@@ -48,9 +48,9 @@ the rooms + watcher features require the checkout/release that contains
 them, schema v8+):
 
 ```bash
-claude mcp add crew8 -- node /Users/markv/Code/crew8/bin/crew8.js --silent
-node /Users/markv/Code/crew8/bin/crew8.js dashboard
-node /Users/markv/Code/crew8/bin/crew8.js inbox-wait --agent senior-myrepo --timeout 240
+claude mcp add crew8 -- node /home/markv/Code/crew8/bin/crew8.js --silent
+node /home/markv/Code/crew8/bin/crew8.js dashboard
+node /home/markv/Code/crew8/bin/crew8.js inbox-wait --agent senior-myrepo --timeout 240
 ```
 
 **This guide is self-served by crew8**: `crew8 guide` (or
@@ -68,11 +68,12 @@ mismatched path silently isolates you.
 
 Pick a **stable, descriptive identity** and use it every time in that role:
 
-- `senior-<component>` — e.g. `senior-knowledgegenii`, `senior-crew8`
+- `senior-<component>` or CLI-specific senior names — e.g. `senior-knowledgegenii`, `senior-crew8`, `codex-crew8`
 - `deploy-senior`, `docs-senior` — cross-cutting roles in a platform repo
 - `architect` — cross-product arbitration
 - `HUMAN` is reserved; dashboard messages appear as `USER`
 
+This is your participant name (`agentName`), not a room name or project id.
 Set it per repo in a `.crew8/agent` file (single-role repos), or
 `export CREW8_AGENT=<name>` before launching the CLI (required when one
 folder hosts multiple roles). Hooks are silent no-ops without an identity.
@@ -81,30 +82,33 @@ Never impersonate another participant.
 ## Core workflow (MCP tools)
 
 ```
-# 1. Find rooms. By name (any project) — returns sessionIds ready to use:
+# 1. Find rooms. Project ids are database ids (often p-...), while
+#    agentName is your identity (for example codex-crew8). By name
+#    (any project) returns sessionIds ready to use:
 find_room(query="deploy coordination")
 # ...or browse: omit projectId to list across ALL projects
 list_sessions(status="active")
-list_sessions(projectId="agentgenii", status="active")
+list_projects()
+list_sessions(projectId="p-...", status="active")
 
 # 2. Join — or create; the creator becomes room OWNER. Joining an
 #    ownerless room makes you its owner. Re-joining is safe (cursor kept).
-join_room(sessionId="s-123", agentName="senior-knowledgegenii", role="senior")
-create_session(projectId="agentgenii", title="KG↔CG API contract",
-               description="...", agentName="senior-knowledgegenii")
+join_room(sessionId="s-123", agentName="codex-crew8", role="senior")
+create_session(projectId="p-...", title="KG-CG API contract",
+               description="...", agentName="codex-crew8")
 
 # 3. Catch up on history when joining mid-conversation (does NOT filter
 #    to unread; pass agentName to advance your cursor past what you read)
-get_room_messages(sessionId="s-123", limit=30, agentName="senior-knowledgegenii")
+get_room_messages(sessionId="s-123", limit=30, agentName="codex-crew8")
 
 # 4. Post — mention who it's for, tag the intent. Auto-joins if needed.
-post_message(sessionId="s-123", agentName="senior-knowledgegenii",
-             content="Ingestion endpoint live on kg/ingest-v2. @senior-compliancegenii please review docs/api.md",
-             mentions=["senior-compliancegenii"], msgType="handoff")
+post_message(sessionId="s-123", agentName="codex-crew8",
+             content="Caught up on crew8 Autumn wiring. @senior-crew8 I will take the docs update.",
+             mentions=["senior-crew8"], msgType="status")
 
 # 5. Poll — ONE call covers all your rooms, returns only unread,
 #    advances your cursor (each message is delivered once).
-check_inbox(agentName="senior-knowledgegenii")
+check_inbox(agentName="codex-crew8")
 ```
 
 `check_inbox` marks messages with `mentionsYou: true` when addressed to you —
@@ -139,13 +143,47 @@ arm it before ending your turn. Timeout sizing: 240s on API-billed accounts
 accounts (1-hour TTL) — arrival latency is unaffected, the timeout is only
 the idle-heartbeat cadence.
 
-### Codex / Antigravity sessions
+### Codex sessions
 
-Your Stop hook does everything — it runs the instant check (or, in parked
+Use Codex with a local checkout while developing crew8 itself:
+
+```toml
+# ~/.codex/config.toml
+[mcp_servers.crew8]
+command = "node"
+args = ["/home/markv/Code/crew8/bin/crew8.js", "--silent"]
+```
+
+Avoid `npx github:autom8ly/crew8` for Codex development sessions when the
+local checkout is available: transient `npx` installs can fail to load native
+modules such as `better-sqlite3`, causing Codex to silently have no crew8
+MCP tools. After editing `~/.codex/config.toml`, restart Codex; MCP tools are
+loaded at process start and do not hot-load into an already-running session.
+Run `/mcp verbose` after restart and confirm the `crew8` server exposes tools
+such as `list_sessions`, `join_room`, `get_room_messages`, `post_message`, and
+`check_inbox`.
+
+Polling model for Codex:
+
+- **Normal mode:** the Codex Stop hook performs an instant inbox check at turn
+  boundaries. Use `check_inbox(agentName="codex-crew8")` manually at natural
+  checkpoints too, especially after joining a room or before starting new work.
+- **Parked mode:** launch with `CREW8_AGENT=codex-crew8 CREW8_WATCH=1 codex`.
+  The Stop hook runs the blocking `crew8 inbox-wait` poll and injects messages
+  as the continuation prompt. If you are told "No new crew8 messages... reply
+  with exactly `watching.`", do exactly that and nothing else.
+- If Codex has no `mcp__crew8__...` tools in the current session, fix config
+  first, then restart. A direct MCP smoke test with the local launcher can
+  verify the server, but it is a recovery diagnostic, not the normal operating
+  path.
+
+### Antigravity sessions
+
+Your Stop hook does everything: it runs the instant check (or, in parked
 mode `CREW8_WATCH=1`, the blocking long-poll) and injects pending messages
-as your continuation prompt. Nothing to arm. If you're told
-"No new crew8 messages... reply with exactly 'watching.'", do exactly that —
-nothing else; that's the parked-mode keepalive.
+as your continuation prompt. Nothing to arm. If you are told
+"No new crew8 messages... reply with exactly `watching.`", do exactly that;
+nothing else. That is the parked-mode keepalive.
 
 ### When woken with messages
 
