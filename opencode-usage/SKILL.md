@@ -135,26 +135,53 @@ Both work. (opencode-runner uses the v2 path — it is valid, not wrong. The
 runner's real caveat is that it subscribes to the GLOBAL event stream and may
 show other sessions' events unless filtered by `sessionID`.)
 
-You can also set the permission policy when you CREATE the session — the
-`POST /session` body accepts a `permission` object — so you don't always need
-an `opencode.json` in the workspace.
+You can also set the permission policy when you CREATE the session. In
+opencode 1.17.13, `POST /session` accepts `permission` as an array of
+rules, not the older map shape:
+```json
+[
+  {"permission": "edit", "pattern": "*", "action": "allow"},
+  {"permission": "bash", "pattern": "*", "action": "deny"},
+  {"permission": "webfetch", "pattern": "*", "action": "deny"}
+]
+```
+If a documented request shape returns `{"_tag":"BadRequest"}`, inspect
+`GET /doc` and update this skill before retrying.
+
+You therefore do not always need an `opencode.json` in the workspace.
 
 ## Model & agent selection (pin it deliberately)
 
 A session created via the API inherits a DEFAULT model, which may not be the
-one you want (e.g. it can pick a local model when you intended a big remote
+one you want (e.g. it can pick some other model when you intended a specific
 one). The senior should pin the model explicitly:
 
 - At session creation: `POST /session` body accepts `{model, agent, permission}`.
 - Per prompt: `POST /session/:id/message` and `/prompt_async` accept `{model, agent}`.
 - List available models: `GET /api/model`.
 
-Route deliberately to control cost and speed: a cheap local/open model for
-bulk/mechanical work, escalating to a larger remote model for hard tasks —
-this is what lets the junior absorb tokens on local inference while the senior
-keeps control. (Note: local model servers, e.g. Ollama, may need timeout/
-config tuning to avoid request timeouts on long generations — handle that in
-the model/provider config, separately from this skill.)
+### Default model policy — ALWAYS use "Big Pickle"
+
+**Pin every OpenCode session and every prompt to the `Big Pickle` model by
+default.** This is the standing default; do not let a session run on whatever
+model it inherited. Set it at session creation AND on each prompt, since either
+can override the other.
+
+**Fall back to a free model ONLY IF required** — i.e. only when Big Pickle is
+genuinely unavailable (not listed in `GET /api/model`, rate-limited/quota-
+exhausted, erroring, or otherwise unusable for the task at hand). Never drop to
+a free model merely to save cost when Big Pickle is available.
+
+**Announce every switch away from Big Pickle.** If you fall back (or switch to
+any other model for any reason), tell the user explicitly *before proceeding* —
+name the model you are switching to and why Big Pickle wasn't used, e.g.
+"⚠️ Big Pickle is rate-limited; falling back to `<free-model-name>` for this
+session." Never silently run a session on a non–Big Pickle model. When you
+switch back to Big Pickle, say so too.
+
+(Note: some model servers may need timeout/config tuning to avoid request
+timeouts on long generations — handle that in the model/provider config,
+separately from this skill.)
 
 ## Making a workspace appear in the GUI sidebar
 
@@ -207,10 +234,18 @@ Two ways to handle permission gates (`edit` / `bash` / `webfetch`):
    interactive-approval deadlocks when an agent drives the session
    headlessly.
 
-2. **For autonomous runs inside an ISOLATED, CHECKPOINTED workspace**: add
-   an `opencode.json` with:
+2. **For autonomous runs inside an ISOLATED, CHECKPOINTED workspace**: set
+   the permission rules at session creation, or add an equivalent
+   `opencode.json`. For opencode 1.17.13 session creation uses this array
+   shape:
    ```json
-   {"permission": {"edit": "allow", "bash": "deny", "webfetch": "deny"}}
+   {
+     "permission": [
+       {"permission": "edit", "pattern": "*", "action": "allow"},
+       {"permission": "bash", "pattern": "*", "action": "deny"},
+       {"permission": "webfetch", "pattern": "*", "action": "deny"}
+     ]
+   }
    ```
    Allow only what is needed. **Never auto-allow `bash` in a non-isolated
    repo.**
@@ -221,7 +256,9 @@ Two ways to handle permission gates (`edit` / `bash` / `webfetch`):
    (`"checkpoint before opencode <task>"`). Never rely on chat history for
    rollback.
 2. **Scope** to ONE repo; write a single focused instruction.
-3. **Create a session** scoped with `?directory=<repo>`.
+3. **Create a session** scoped with `?directory=<repo>`, pinned to the
+   `Big Pickle` model (see **Default model policy** above). Fall back to a free
+   model only if Big Pickle is unavailable — and announce the switch.
 4. **Generate and give the user the watch URL**.
 5. **Send the prompt** (`prompt_async`).
 6. **User watches/approves gates** in the UI (or autonomous via

@@ -75,6 +75,15 @@ numbered sections.
 
 ## Lessons log
 
+### 2026-07-06 — API schema drift before junior dispatch
+- **Verify the live OpenCode schema when setup calls fail.** The usage skill
+  documented the older permission map shape, but opencode 1.17.13 expects a
+  `permission` array of `{permission, pattern, action}` rules on
+  `POST /session`. A bare `{"_tag":"BadRequest"}` from session creation is
+  a senior orchestration problem, not a junior implementation blocker: inspect
+  `GET /doc`, update `opencode-usage`, then retry with the verified request
+  shape.
+
 ### 2026-07-02 — green-board campaign (senior-led, no juniors: debugging round)
 - **Diagnosis-first paid off:** two parallel read-only Explore agents produced
   file:line root-cause tables for 14 failing scenarios in ~3 min; every fix
