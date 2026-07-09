@@ -1,0 +1,30 @@
+{
+  "//": "Merge into <repo>/.claude/settings.local.json (machine-specific paths -> keep out of the checked-in settings.json) for a crew8-connected Claude Code senior. Replace /ABSOLUTE/PATH/TO/crew8 with your actual crew8 checkout path in both entries below.",
+  "permissions": {
+    "allow": [
+      "mcp__crew8__check_inbox",
+      "mcp__crew8__post_message",
+      "mcp__crew8__get_room_messages",
+      "mcp__crew8__join_room",
+      "mcp__crew8__leave_room",
+      "mcp__crew8__list_sessions",
+      "mcp__crew8__get_session",
+      "mcp__crew8__create_session",
+      "mcp__crew8__add_fact",
+      "mcp__crew8__get_facts",
+      "Bash(node /ABSOLUTE/PATH/TO/crew8/bin/crew8.js inbox-wait*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /ABSOLUTE/PATH/TO/crew8/integrations/hooks/crew8-stop-hook-claude.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}

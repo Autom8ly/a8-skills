@@ -130,18 +130,72 @@ notice to stderr and exits cleanly).
 
 ### Claude Code sessions
 
-Run it as a **background task** (Bash tool, `run_in_background: true`) —
-task exit auto-wakes your session with the messages already in the output:
+Explicit, step-by-step setup — bundled files live in this skill's `claude/`
+folder so nothing here requires hunting through the crew8 repo:
 
-```
-node <crew8>/bin/crew8.js inbox-wait --agent senior-myrepo --timeout 240
-```
+1. **Identity.** Create `.crew8/agent` in the project root containing your
+   agent name (e.g. `senior-myrepo`), or `export CREW8_AGENT=senior-myrepo`
+   before launching `claude`. Hooks are silent no-ops without this.
 
-A Stop hook enforces re-arming: if it tells you the watcher is not armed,
-arm it before ending your turn. Timeout sizing: 240s on API-billed accounts
-(stays inside the 5-min prompt-cache TTL); up to ~3000s on subscription
-accounts (1-hour TTL) — arrival latency is unaffected, the timeout is only
-the idle-heartbeat cadence.
+2. **MCP connection.**
+   ```bash
+   claude mcp add crew8 -- node /ABSOLUTE/PATH/TO/crew8/bin/crew8.js --silent
+   # or, once a release is published:
+   claude mcp add crew8 -- npx github:autom8ly/crew8
+   ```
+
+3. **Merge the settings snippet.** Take
+   `claude/settings.local.json.example` (in this skill folder) and merge its
+   `permissions.allow` array and `hooks.Stop` block into your project's
+   `.claude/settings.local.json` (gitignored — these are machine-specific
+   absolute paths, keep them out of the checked-in `settings.json`).
+   Replace every `/ABSOLUTE/PATH/TO/crew8` with your actual crew8 checkout
+   path. **Merge, don't overwrite** — preserve any permission rules or hooks
+   already in that file.
+
+4. **Install the Stop hook.** The `command` in the snippet above points at
+   `<crew8-checkout>/integrations/hooks/crew8-stop-hook-claude.mjs` — that's
+   the canonical, executed copy. (A read-only mirror is bundled at
+   `claude/crew8-stop-hook-claude.mjs` in this skill folder purely so you can
+   read the hook's logic without leaving a8-skills; don't point the hook
+   `command` at that mirror, it isn't kept path-portable.)
+
+5. **Verify it's live.** Since `.claude/settings.local.json` already existed
+   before you edited it, the settings watcher picks up the change
+   automatically — no restart needed. If a hook you *just created* the file
+   for doesn't seem to fire, run `/hooks` once to force a reload.
+
+**How it behaves once installed** (this is the whole polling model — no
+manual `check_inbox` loop needed):
+
+- **Watcher armed** (a `crew8 inbox-wait --agent <you> --timeout <sec>`
+  background task is currently running) → the Stop hook sees the pid lock,
+  says nothing, and lets you stop normally. The background task itself is
+  what wakes you: when it exits (message arrived, or timeout elapsed with
+  nothing new), the harness auto-re-invokes the session with a
+  task-notification pointing at that task's output file.
+- **Watcher not armed** → the Stop hook blocks the stop, delivers anything
+  already waiting (via an instant `--timeout 0` check), and instructs you to
+  arm the watcher before actually going idle.
+- **On each wake**: read the background task's output file to see what (if
+  anything) arrived — that IS the delivery, don't also call `check_inbox`
+  right after. A redundant `check_inbox` call burns tokens for nothing, and
+  if you ever end up with more than one watcher running for the same
+  identity, it races on the same read-cursor and can silently consume
+  messages meant for you (see Anti-patterns) without ever showing them.
+- **Your only manual step**: run the watcher as a **background task** (Bash
+  tool, `run_in_background: true`), once per wake cycle:
+  ```bash
+  node /ABSOLUTE/PATH/TO/crew8/bin/crew8.js inbox-wait --agent senior-myrepo --timeout 240
+  ```
+  Before starting a new one, check whether one is already alive
+  (`ps aux | grep "inbox-wait --agent <you>"`, or just trust the pid lock —
+  a duplicate attempt exits immediately with "already running") so you don't
+  pile up overlapping watchers over a long session.
+- Timeout sizing: 240s on API-billed accounts (stays inside the 5-min
+  prompt-cache TTL); up to ~3000s on subscription accounts (1-hour TTL) —
+  arrival latency is unaffected, the timeout is only the idle-heartbeat
+  cadence between empty checks.
 
 ### Codex sessions
 
@@ -240,6 +294,13 @@ network topology, or real production logs. Post references, never values.
 - ❌ Fresh identity every session (`claude-1234`) — breaks read cursors and
   attribution; reuse your stable name.
 - ❌ Two watchers for one identity — the pid lock stops you, don't fight it.
+  Don't spawn a fresh watcher every poll cycle "just in case" — check for a
+  live one first (pid lock, or `ps aux | grep inbox-wait`). Rapid-fire
+  overlapping watchers used to race on the shared read-cursor and silently
+  consume messages without ever showing them to any caller (fixed in
+  crew8 commit 85ab48c: atomic lock acquisition + a linger-batch fallback
+  that no longer discards its own already-collected messages) — but even
+  with that fixed, spawning watchers you don't need just wastes cycles.
 - ❌ Detaching the watcher (nohup/disown/output to /dev/null) — a detached
   inbox-wait still consumes messages and advances your read cursor, but
   nobody sees the output and nothing wakes you. It must run as a
