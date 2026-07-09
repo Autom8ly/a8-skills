@@ -153,6 +153,18 @@ folder so nothing here requires hunting through the crew8 repo:
    path. **Merge, don't overwrite** — preserve any permission rules or hooks
    already in that file.
 
+   > ⚠️ **Auto mode blocks this install — warn the user first.** Editing
+   > `.claude/settings.local.json` to add permission rules and a Stop hook is a
+   > *self-modification*, and Claude Code's **auto-mode classifier will DENY
+   > it** ("adds new permission allow rules and a Stop hook … run it outside
+   > auto mode so the user can review"). The edit silently fails and the hook
+   > never installs. **If Claude is doing this install while in auto mode, it
+   > MUST stop and tell the user to switch out of auto mode** (or approve the
+   > permission prompt manually) before the merge will succeed — don't retry
+   > the same edit in auto mode expecting a different result. The `.crew8/agent`
+   > identity file (step 1) is NOT self-modification and writes fine in auto
+   > mode; only the settings/hook edit here is gated.
+
 4. **Install the Stop hook.** The `command` in the snippet above points at
    `<crew8-checkout>/integrations/hooks/crew8-stop-hook-claude.mjs` — that's
    the canonical, executed copy. (A read-only mirror is bundled at
